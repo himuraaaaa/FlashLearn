@@ -154,12 +154,22 @@ class FlashcardRepository(
             val docRef = firestore.collection("flashcards").document()
             val cardWithId = flashcard.copy(id = docRef.id)
 
+            // Create a map of the data to ensure all fields are properly set
+            val flashcardData = mapOf(
+                "id" to cardWithId.id,
+                "question" to cardWithId.question,
+                "answer" to cardWithId.answer,
+                "setId" to cardWithId.setId,
+                "createdAt" to cardWithId.createdAt,
+                "updatedAt" to cardWithId.updatedAt
+            )
+
             // Save to Firestore
-            docRef.set(cardWithId).await()
+            docRef.set(flashcardData).await()
 
             println("Flashcard created with ID: ${docRef.id}")
 
-            // Update card count in set using a transaction
+            // Update card count in set
             val setRef = firestore.collection("sets").document(flashcard.setId)
             firestore.runTransaction { transaction ->
                 val setDoc = transaction.get(setRef)
@@ -177,9 +187,12 @@ class FlashcardRepository(
             Result.success(docRef.id)
         } catch (e: Exception) {
             println("Error creating flashcard in Firestore: ${e.message}")
+            e.printStackTrace()
             Result.failure(e)
         }
     }
+
+
 
     suspend fun updateFlashcard(flashcard: Flashcard): Result<Unit> {
         return try {
@@ -235,17 +248,42 @@ class FlashcardRepository(
         try {
             println("Getting flashcards for set: $setId")
 
+            // Ensure we're using the correct collection name and field
             val snapshot = firestore.collection("flashcards")
                 .whereEqualTo("setId", setId)
-                .orderBy("createdAt", Query.Direction.ASCENDING)
                 .get()
                 .await()
 
-            val flashcards = snapshot.documents.mapNotNull { doc ->
-                doc.toObject(Flashcard::class.java)
+            println("Firestore query returned ${snapshot.documents.size} documents")
+
+            // Debug: print raw document data
+            snapshot.documents.forEach { doc ->
+                println("Document ID: ${doc.id}, Data: ${doc.data}")
             }
 
-            println("Found ${flashcards.size} flashcards for set $setId")
+            val flashcards = snapshot.documents.mapNotNull { doc ->
+                try {
+                    // Try to manually construct the Flashcard object from document data
+                    val data = doc.data
+                    if (data != null) {
+                        Flashcard(
+                            id = doc.id,
+                            question = data["question"] as? String ?: "",
+                            answer = data["answer"] as? String ?: "",
+                            setId = data["setId"] as? String ?: "",
+                            createdAt = (data["createdAt"] as? Long) ?: System.currentTimeMillis(),
+                            updatedAt = (data["updatedAt"] as? Long) ?: System.currentTimeMillis()
+                        )
+                    } else {
+                        doc.toObject(Flashcard::class.java)
+                    }
+                } catch (e: Exception) {
+                    println("Error converting document to Flashcard: ${e.message}")
+                    null
+                }
+            }
+
+            println("Successfully converted ${flashcards.size} documents to Flashcard objects")
 
             // Debug: print each flashcard
             flashcards.forEachIndexed { index, card ->
@@ -259,6 +297,7 @@ class FlashcardRepository(
             emit(emptyList())
         }
     }
+
 
     // Search
     fun searchSets(userId: String, query: String): Flow<List<FlashcardSet>> = flow {

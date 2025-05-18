@@ -9,13 +9,25 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -31,11 +43,26 @@ fun AlbumScreen(
     onNavigateToCreateSet: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
-    LaunchedEffect(Unit) {
+    var refreshTrigger by remember { mutableStateOf(0) }
+
+    // Force reload data when screen is shown or refresh is triggered
+    LaunchedEffect(refreshTrigger) {
+        println("Loading all sets (refresh: $refreshTrigger)")
         viewModel.loadAllSets()
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("My Flashcard Sets") },
+                actions = {
+                    // Add refresh button
+                    IconButton(onClick = { refreshTrigger++ }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    }
+                }
+            )
+        },
         bottomBar = {
             BottomNavBar(
                 currentRoute = "album",
@@ -48,6 +75,11 @@ fun AlbumScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onNavigateToCreateSet) {
+                Icon(Icons.Default.Add, contentDescription = "Create New Set")
+            }
         }
     ) { paddingValues ->
         Column(
@@ -56,12 +88,11 @@ fun AlbumScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            Text(
-                text = "My Flashcard Sets",
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            // Debug info
+            println("Sets in viewModel: ${viewModel.sets.size}")
+            viewModel.sets.forEach { set ->
+                println("Set in UI: ${set.id}, Title: ${set.title}, Cards: ${set.cardCount}")
+            }
 
             if (viewModel.isLoading) {
                 Box(
@@ -79,11 +110,23 @@ fun AlbumScreen(
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "No flashcard sets. Create your first set!",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "No flashcard sets yet",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(onClick = onNavigateToCreateSet) {
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Spacer(modifier = Modifier.padding(4.dp))
+                            Text("Create Your First Set")
+                        }
+                    }
                 }
             } else {
                 LazyColumn(

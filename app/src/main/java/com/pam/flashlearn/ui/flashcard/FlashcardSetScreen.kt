@@ -13,12 +13,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Quiz
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -62,8 +63,11 @@ fun FlashcardSetScreen(
     val scope = rememberCoroutineScope()
 
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var refreshTrigger by remember { mutableStateOf(0) }
 
-    LaunchedEffect(setId) {
+    // Force reload data when screen is shown or refresh is triggered
+    LaunchedEffect(setId, refreshTrigger) {
+        println("Loading set and flashcards for setId: $setId (refresh: $refreshTrigger)")
         viewModel.loadSet(setId)
         viewModel.loadFlashcards(setId)
     }
@@ -98,10 +102,19 @@ fun FlashcardSetScreen(
                 title = { Text(viewModel.currentSet?.title ?: "Flashcard Set") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
+                    // Add refresh button
+                    IconButton(onClick = {
+                        refreshTrigger++
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Refreshing data...")
+                        }
+                    }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    }
                     IconButton(onClick = {
                         if (viewModel.currentSet != null) {
                             onNavigateToEditSet(setId)
@@ -194,7 +207,7 @@ fun FlashcardSetScreen(
                             enabled = viewModel.flashcards.isNotEmpty(),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Default.Quiz, contentDescription = null)
+                            Icon(Icons.Default.Assignment, contentDescription = null)
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Quiz")
                         }
@@ -203,7 +216,7 @@ fun FlashcardSetScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "Flashcards",
+                        text = "Flashcards (${viewModel.flashcards.size})",
                         style = MaterialTheme.typography.titleLarge
                     )
 
@@ -216,13 +229,33 @@ fun FlashcardSetScreen(
                                 .height(200.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "No flashcards yet. Add your first card!",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                            )
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "No flashcards yet. Add your first card!",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Button(
+                                    onClick = { onNavigateToAddFlashcard(setId) }
+                                ) {
+                                    Icon(Icons.Default.Add, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("Add Flashcard")
+                                }
+                            }
                         }
                     } else {
+                        // Debug print
+                        println("Displaying ${viewModel.flashcards.size} flashcards")
+                        viewModel.flashcards.forEach { card ->
+                            println("Card in UI: ${card.id}, Q: ${card.question}")
+                        }
+
                         LazyColumn {
                             items(viewModel.flashcards) { flashcard ->
                                 FlashcardEditItem(
@@ -245,4 +278,3 @@ fun FlashcardSetScreen(
         }
     }
 }
-

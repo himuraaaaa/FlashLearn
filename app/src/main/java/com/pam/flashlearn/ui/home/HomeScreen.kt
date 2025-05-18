@@ -10,14 +10,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,12 +46,26 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var refreshTrigger by remember { mutableStateOf(0) }
 
-    LaunchedEffect(Unit) {
+    // Force reload data when screen is shown or refresh is triggered
+    LaunchedEffect(refreshTrigger) {
+        println("Loading recent sets (refresh: $refreshTrigger)")
         viewModel.loadRecentSets()
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("FlashLearn") },
+                actions = {
+                    // Add refresh button
+                    IconButton(onClick = { refreshTrigger++ }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    }
+                }
+            )
+        },
         bottomBar = {
             BottomNavBar(
                 currentRoute = "home",
@@ -58,6 +78,11 @@ fun HomeScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = onNavigateToCreateSet) {
+                Icon(Icons.Default.Add, contentDescription = "Create New Set")
+            }
         }
     ) { paddingValues ->
         Column(
@@ -66,14 +91,6 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            Text(
-                text = "FlashLearn",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = {
@@ -100,6 +117,12 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Debug info
+                println("Recent sets in viewModel: ${viewModel.recentSets.size}")
+                viewModel.recentSets.forEach { set ->
+                    println("Recent set in UI: ${set.id}, Title: ${set.title}")
+                }
+
                 if (viewModel.isLoading) {
                     Box(
                         modifier = Modifier
@@ -116,11 +139,23 @@ fun HomeScreen(
                             .height(200.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "No recent sets. Create your first set!",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "No recent sets. Create your first set!",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(onClick = onNavigateToCreateSet) {
+                                Icon(Icons.Default.Add, contentDescription = null)
+                                Spacer(modifier = Modifier.padding(4.dp))
+                                Text("Create Set")
+                            }
+                        }
                     }
                 } else {
                     LazyColumn {

@@ -229,4 +229,19 @@ class FlashcardViewModel(
             isLoading = false
         }
     }
+    // Tambahkan fungsi ini di FlashcardViewModel.kt
+    fun forceRefresh(setId: String) {
+        viewModelScope.launch {
+            println("Force refreshing data for set: $setId")
+
+            // Clear existing data
+            _flashcards.clear()
+            currentSet = null
+
+            // Reload data
+            loadSet(setId)
+            loadFlashcards(setId)
+        }
+    }
+
 }

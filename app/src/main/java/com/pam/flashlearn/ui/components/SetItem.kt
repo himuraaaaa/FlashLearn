@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -30,6 +30,9 @@ fun SetItem(
     set: FlashcardSet,
     onClick: () -> Unit
 ) {
+    // Debug print
+    println("Rendering SetItem: ${set.id}, Title: ${set.title}, Cards: ${set.cardCount}")
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -75,7 +78,7 @@ fun SetItem(
             Spacer(modifier = Modifier.width(8.dp))
 
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                imageVector = Icons.Default.KeyboardArrowRight,
                 contentDescription = "View Set",
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -87,3 +90,5 @@ private fun formatDate(timestamp: Long): String {
     val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
     return sdf.format(Date(timestamp))
 }
+
+
