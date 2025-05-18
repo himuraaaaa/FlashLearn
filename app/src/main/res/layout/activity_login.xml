@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Logo -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/logoImage"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/ic_logo"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="Logo FlashLearn" />
+
+
+
+        <!-- Welcome Text -->
+        <TextView
+            android:id="@+id/welcomeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome"
+            android:textSize="24sp"
+            android:textColor="#000000"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Info Text -->
+        <TextView
+            android:id="@+id/infoText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="By signing in you are agreeing our"
+            android:textSize="14sp"
+            android:textColor="#7A6D6D"
+            android:layout_marginBottom="4dp"/>
+
+        <!-- Term and Privacy -->
+        <TextView
+            android:id="@+id/termPrivacy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Term and privacy policy"
+            android:textSize="14sp"
+            android:textColor="#007AFF"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Email Input -->
+        <EditText
+            android:id="@+id/emailInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Email Address"
+            android:background="@drawable/edittext_background"
+            android:padding="12dp"
+            android:drawableEnd="@drawable/ic_email"
+            android:drawablePadding="8dp"
+            android:layout_marginBottom="12dp"
+            android:inputType="textEmailAddress"/>
+
+        <!-- Password Input -->
+        <EditText
+            android:id="@+id/passwordInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Password"
+            android:background="@drawable/edittext_background"
+            android:padding="12dp"
+            android:drawableEnd="@drawable/ic_lock"
+            android:drawablePadding="8dp"
+            android:layout_marginBottom="24dp"
+            android:inputType="textPassword"/>
+
+        <!-- Buttons Container -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:weightSum="2">
+
+            <!-- Login Button -->
+            <Button
+                android:id="@+id/loginButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Login"
+                android:textColor="#FFFFFF"
+                android:background="@drawable/button_login_background"
+                android:layout_marginEnd="12dp"/>
+
+            <!-- Register Button -->
+            <Button
+                android:id="@+id/registerButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Register"
+                android:textColor="#172D84"
+                android:background="@drawable/button_register_background"/>
+        </LinearLayout>
+
+        <!-- Forget Password Text -->
+        <TextView
+            android:id="@+id/forgetPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Forget password?"
+            android:textColor="#007AFF"
+            android:layout_marginTop="12dp"/>
+    </LinearLayout>
+</ScrollView>
